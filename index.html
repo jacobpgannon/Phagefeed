@@ -6,30 +6,37 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="PhageFeed">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#f6f6f4" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#1c1c1e" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#231f20">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-512.png">
-<title>PhageFeed</title>
+<title>PhageFeed · Meeske Lab</title>
 <style>
-:root{--bg:#f6f6f4;--card:#fff;--ink:#1d1d1f;--mute:#6e6e73;--line:#e3e3e0;--acc:#0a66c2;--red:#d62728;
+:root{--bg:#f6f5f4;--card:#fff;--ink:#231f20;--mute:#6b6667;--line:#e4e1df;--acc:#c2410c;--red:#d62728;
+      --brand:#231f20;--orange:#f05922;
       color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
-@media (prefers-color-scheme:dark){:root{--bg:#1c1c1e;--card:#2a2a2d;--ink:#f2f2f7;--mute:#a1a1a6;--line:#3a3a3d;--acc:#64a8ff;color-scheme:dark}}
+@media (prefers-color-scheme:dark){:root{--bg:#1a1718;--card:#2a2627;--ink:#f4f1f0;--mute:#a8a2a0;--line:#3b3637;--acc:#ff8a5b;color-scheme:dark}}
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;font:15px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;background:var(--bg);color:var(--ink);-webkit-tap-highlight-color:transparent}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--brand)}
 header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);
-       padding:10px max(14px,env(safe-area-inset-left)) 8px max(14px,env(safe-area-inset-right))}
-.top{display:flex;align-items:center;gap:8px}
-h1{font-size:20px;margin:0;font-weight:700;letter-spacing:-.015em;flex:1}
+       padding:0 max(14px,env(safe-area-inset-left)) 8px max(14px,env(safe-area-inset-right))}
+.top{display:flex;align-items:center;gap:8px;background:var(--brand);color:#fff;
+     margin:0 calc(-1 * max(14px,env(safe-area-inset-left)));padding:9px max(14px,env(safe-area-inset-left));
+     border-bottom:3px solid var(--orange)}
+.brand{display:flex;align-items:center;flex:none;line-height:0}
+.brand img{height:30px;width:auto}
+.divider{width:1px;align-self:stretch;margin:4px 2px;background:rgba(255,255,255,.28)}
+h1{font-size:19px;margin:0;font-weight:650;letter-spacing:-.01em;flex:1;white-space:nowrap}
+.top button{background:transparent;color:#fff;border-color:rgba(255,255,255,.3)}
+.top button.primary{background:var(--orange);border-color:var(--orange);color:var(--brand);font-weight:700}
 button{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;padding:7px 12px;cursor:pointer;min-height:36px}
 button.primary{background:var(--acc);border-color:var(--acc);color:#fff}
 button:disabled{opacity:.55}
 button.icon{min-width:40px;padding:6px 10px;font-size:17px}
-#status{color:var(--mute);font-size:12.5px;margin-top:4px;min-height:18px}
+#status{color:var(--mute);font-size:12.5px;margin-top:7px;min-height:18px}
 .spin{display:inline-block;width:10px;height:10px;border:2px solid var(--mute);border-top-color:transparent;border-radius:50%;animation:s 1s linear infinite;vertical-align:-1px;margin-right:5px}
 @keyframes s{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.spin{animation-duration:3s}}
@@ -38,14 +45,15 @@ input[type=search]{font:inherit;font-size:16px;width:100%;margin-top:8px;padding
 .scroller::-webkit-scrollbar{display:none}
 .chip{font-size:13px;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:var(--card);cursor:pointer;user-select:none;-webkit-user-select:none;white-space:nowrap;flex:none}
 .chip .n{color:var(--mute);margin-left:4px;font-size:11.5px}
-.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+@media (prefers-color-scheme:dark){.chip.on{background:var(--orange);color:var(--brand);border-color:var(--orange)}}
 .chip.on .n{color:inherit;opacity:.7}
 .chip.hl{border-width:1.5px}
 .chip.hl.on{color:#fff}
 .sep{width:1px;background:var(--line);flex:none;margin:3px 2px}
 main{padding:12px max(14px,env(safe-area-inset-left)) calc(40px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-right));max-width:760px;margin:0 auto}
 .count{color:var(--mute);font-size:12.5px;margin:0 0 8px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px 12px 17px;margin-bottom:10px;position:relative;overflow:hidden}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px 12px 17px;margin-bottom:10px;position:relative;overflow:hidden}
 .card .bar{position:absolute;left:0;top:0;bottom:0;width:5px}
 .card.has-hl{border-width:1.5px}
 .title{font-size:16px;font-weight:600;line-height:1.3;color:var(--ink);text-decoration:none;display:block}
@@ -55,7 +63,7 @@ main{padding:12px max(14px,env(safe-area-inset-left)) calc(40px + env(safe-area-
 @media (prefers-color-scheme:dark){.journal.biorxiv{color:#ff7a7a}}
 .badge{font-size:10.5px;padding:0 6px;border-radius:4px;border:1px solid var(--line);font-weight:600}
 .badge.pdf{color:#fff;background:#3a7d44;border-color:#3a7d44}
-.badge.new{color:#fff;background:var(--acc);border-color:var(--acc)}
+.badge.new{color:var(--brand);background:var(--orange);border-color:var(--orange)}
 .tag{font-size:11px;font-weight:650;padding:0 7px;border-radius:4px;color:#fff}
 .summary{margin-top:7px;font-size:14.5px}
 .summary .kind{font-size:10.5px;color:var(--mute);border:1px solid var(--line);border-radius:3px;padding:0 4px;margin-right:5px;vertical-align:1px}
@@ -79,7 +87,7 @@ dialog .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
 dialog .tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
 .err{color:var(--red)}
 .rowlbl{font-size:12.5px;color:var(--mute);align-self:center;flex:none;padding-right:2px}
-.chip.t{border-color:color-mix(in srgb, var(--acc) 45%, var(--line))}
+.chip.t{border-color:color-mix(in srgb, var(--orange) 55%, var(--line))}
 .chip.t.off{opacity:.5;text-decoration:line-through;border-color:var(--line);border-style:dashed}
 :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 </style>
@@ -87,8 +95,10 @@ dialog .tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;padding-top:14
 <body>
 <header>
   <div class="top">
-    <h1>🧬 PhageFeed</h1>
-    <button id="refresh" class="primary" aria-label="Fetch new papers now">↻ Refresh</button>
+    <a class="brand" href="https://meeskelab.org" target="_blank" rel="noopener"><img src="meeske-logo.png" alt="Meeske Lab" width="95" height="30"></a>
+    <span class="divider" aria-hidden="true"></span>
+    <h1>PhageFeed</h1>
+    <button id="refresh" class="primary icon" aria-label="Fetch new papers now">↻</button>
     <button id="mailBtn" class="icon" aria-label="Get new papers by email" hidden>✉︎</button>
     <button id="gear" class="icon" aria-label="Settings">⚙︎</button>
   </div>
@@ -763,7 +773,7 @@ function render(append) {
   if (append) $("#list").insertAdjacentHTML("beforeend", slice.map(card).join(""));
   else $("#list").innerHTML = slice.map(card).join("") || (Object.keys(PAPERS).length
     ? '<div class="empty">No papers match these filters. Clear a filter or turn terms back on to see more.</div>'
-    : '<div class="empty">No papers yet. Tap ↻ Refresh to fetch the last 60 days from PubMed and bioRxiv.<br><br>The first scan takes about 10 minutes; keep the app open. If it’s interrupted, it picks up where it stopped.</div>');
+    : '<div class="empty">No papers yet. Tap ↻ to fetch the last 60 days from PubMed and bioRxiv.<br><br>The first scan takes about 10 minutes; keep the app open. If it’s interrupted, it picks up where it stopped.</div>');
   shown = Math.min(keep, total);
   $("#count").textContent = (total ? `Showing ${shown} of ${total} paper${total === 1 ? "" : "s"}, newest first` : "") +
     (hiddenByTerms ? `${total ? ". " : ""}${hiddenByTerms} hidden by terms you turned off` : "");

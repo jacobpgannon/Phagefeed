@@ -12,7 +12,7 @@ GitHub Pages is free and permanent:
 1. Make a free account at github.com, then click **+ → New repository**. Name it `phagefeed`,
    set it to **Public**, tick **Add a README file**, and click **Create repository**.
 2. Click **Add file → Upload files** and drag in every file from this folder
-   (`index.html`, `manifest.webmanifest`, `sw.js`, the three `icon-*.png`). Click **Commit changes**.
+   (`index.html`, `manifest.webmanifest`, `sw.js`, `terms.json`, `meeske-logo.png`, the three `icon-*.png`). Click **Commit changes**.
 3. Go to **Settings → Pages**. Under *Branch*, choose `main` and `/ (root)`, then **Save**.
    After a minute the page shows your address, e.g. `https://yourname.github.io/phagefeed/`.
 
