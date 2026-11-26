@@ -1,6 +1,6 @@
 // PhageFeed service worker: keeps the app itself available offline.
 // Papers live in IndexedDB; API requests to PubMed / bioRxiv / Europe PMC are never cached here.
-const CACHE = "phagefeed-v3";
+const CACHE = "phagefeed-v5";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "terms.json", "icon-180.png", "meeske-logo.png", "icon-192.png", "icon-512.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => {

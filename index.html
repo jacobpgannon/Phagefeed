@@ -18,6 +18,7 @@
       color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
 @media (prefers-color-scheme:dark){:root{--bg:#1a1718;--card:#2a2627;--ink:#f4f1f0;--mute:#a8a2a0;--line:#3b3637;--acc:#ff8a5b;color-scheme:dark}}
 *,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;font:15px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;background:var(--bg);color:var(--ink);-webkit-tap-highlight-color:transparent}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--brand)}
@@ -41,16 +42,31 @@ button.icon{min-width:40px;padding:6px 10px;font-size:17px}
 @keyframes s{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.spin{animation-duration:3s}}
 input[type=search]{font:inherit;font-size:16px;width:100%;margin-top:8px;padding:8px 11px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);-webkit-appearance:none}
-.scroller{display:flex;gap:6px;overflow-x:auto;margin:8px calc(-1 * max(14px,env(safe-area-inset-left))) 0;padding:0 max(14px,env(safe-area-inset-left)) 2px;scrollbar-width:none}
-.scroller::-webkit-scrollbar{display:none}
-.chip{font-size:13px;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:var(--card);cursor:pointer;user-select:none;-webkit-user-select:none;white-space:nowrap;flex:none}
-.chip .n{color:var(--mute);margin-left:4px;font-size:11.5px}
-.chip.on{background:var(--brand);color:#fff;border-color:var(--brand)}
-@media (prefers-color-scheme:dark){.chip.on{background:var(--orange);color:var(--brand);border-color:var(--orange)}}
-.chip.on .n{color:inherit;opacity:.7}
-.chip.hl{border-width:1.5px}
-.chip.hl.on{color:#fff}
-.sep{width:1px;background:var(--line);flex:none;margin:3px 2px}
+.filters{display:flex;gap:8px;margin-top:8px}
+.period{display:flex;gap:3px;margin-top:8px;padding:3px;background:var(--card);border:1px solid var(--line);border-radius:10px}
+.period button{flex:1;min-height:30px;padding:4px 2px;border:none;border-radius:7px;background:transparent;color:var(--mute);font-size:13.5px;font-weight:600}
+.period button[aria-checked="true"]{background:var(--brand);color:#fff}
+@media (prefers-color-scheme:dark){.period button[aria-checked="true"]{background:var(--orange);color:var(--brand)}}
+.dd{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:5px;font-size:14px;font-weight:600;padding:7px 8px;border-radius:10px;background:var(--card)}
+.dd .cnt{font-size:11.5px;font-weight:700;border-radius:999px;padding:0 6px;background:var(--orange);color:var(--brand);line-height:17px}
+.dd .caret{font-size:11px;color:var(--mute);transition:transform .15s}
+.dd[aria-expanded="true"]{border-color:var(--orange)}
+.dd[aria-expanded="true"] .caret{transform:rotate(180deg)}
+.dd.active{border-color:color-mix(in srgb, var(--orange) 70%, var(--line))}
+#menu{position:absolute;top:calc(100% - 2px);left:max(14px,env(safe-area-inset-left));right:max(14px,env(safe-area-inset-right));z-index:6;
+      background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px rgba(35,31,32,.22);
+      max-height:min(62vh,460px);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 0;max-width:560px;margin:0 auto}
+#menuBackdrop{position:fixed;inset:0;z-index:4;background:rgba(35,31,32,.12)}
+.mi{display:flex;align-items:center;gap:10px;min-height:44px;padding:8px 14px;font-size:15px;cursor:pointer;border-bottom:1px solid var(--line)}
+.mi:last-child{border-bottom:none}
+.mi .lbl{flex:1;min-width:0}
+.mi .n{color:var(--mute);font-size:12.5px}
+.mi .ck{width:18px;text-align:right;color:var(--orange);font-weight:700;font-size:16px}
+.mi.all{font-weight:600}
+.mi .dot{width:10px;height:10px;border-radius:50%;flex:none}
+.mh{font-size:12.5px;color:var(--mute);font-weight:600;padding:12px 14px 4px}
+.mhint{font-size:12.5px;color:var(--mute);padding:8px 14px 6px;border-bottom:1px solid var(--line)}
+@media (prefers-reduced-motion:reduce){.dd .caret{transition:none}}
 main{padding:12px max(14px,env(safe-area-inset-left)) calc(40px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-right));max-width:760px;margin:0 auto}
 .count{color:var(--mute);font-size:12.5px;margin:0 0 8px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px 12px 17px;margin-bottom:10px;position:relative;overflow:hidden}
@@ -86,9 +102,6 @@ dialog .help{font-size:12px;color:var(--mute);margin-top:4px}
 dialog .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
 dialog .tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
 .err{color:var(--red)}
-.rowlbl{font-size:12.5px;color:var(--mute);align-self:center;flex:none;padding-right:2px}
-.chip.t{border-color:color-mix(in srgb, var(--orange) 55%, var(--line))}
-.chip.t.off{opacity:.5;text-decoration:line-through;border-color:var(--line);border-style:dashed}
 :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 </style>
 </head>
@@ -104,10 +117,17 @@ dialog .tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;padding-top:14
   </div>
   <div id="status">…</div>
   <input id="q" type="search" placeholder="Search title, abstract, author" autocomplete="off" enterkeyhint="search">
-  <div class="scroller" id="row1"></div>
-  <div class="scroller" id="jrow"></div>
-  <div class="scroller" id="trow" aria-label="Search terms: tap to turn a term off or on"></div>
+  <div class="period" role="radiogroup" aria-label="Time period">
+    <button type="button" role="radio" data-days="1">1 day</button><button type="button" role="radio" data-days="7">7 days</button><button type="button" role="radio" data-days="30">1 month</button><button type="button" role="radio" data-days="365">1 year</button>
+  </div>
+  <div class="filters">
+    <button class="dd" data-menu="species" aria-haspopup="true" aria-expanded="false" aria-controls="menu"><span>Species</span><span class="cnt" hidden></span><span class="caret" aria-hidden="true">▾</span></button>
+    <button class="dd" data-menu="terms" aria-haspopup="true" aria-expanded="false" aria-controls="menu"><span>Terms</span><span class="cnt" hidden></span><span class="caret" aria-hidden="true">▾</span></button>
+    <button class="dd" data-menu="journals" aria-haspopup="true" aria-expanded="false" aria-controls="menu"><span>Journals</span><span class="cnt" hidden></span><span class="caret" aria-hidden="true">▾</span></button>
+  </div>
+  <div id="menu" role="menu" hidden></div>
 </header>
+<div id="menuBackdrop" hidden></div>
 <main>
   <div id="installTip" class="tip" hidden><b>Add PhageFeed to your Home Screen</b> so it opens full-screen and keeps your papers: tap Share, then <b>Add to Home Screen</b>.<br><button id="tipClose">Got it</button></div>
   <p class="count" id="count"></p>
@@ -157,7 +177,9 @@ dialog .tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;padding-top:14
 "use strict";
 // ============================================================ config (ported from config.py)
 const CFG = {
-  REFRESH_MS: 3600e3, LOOKBACK_DAYS: 60, BIORXIV_LOOKBACK_DAYS: 60, BIORXIV_PARALLEL_DAYS: 3,
+  REFRESH_MS: 3600e3, BIORXIV_SCAN_MAX_DAYS: 60, BIORXIV_PARALLEL_DAYS: 3,
+  // time periods offered in the app (days, label); the refresh searches back this far
+  PERIODS: [[1, "1 day"], [7, "7 days"], [30, "1 month"], [365, "1 year"]], DEFAULT_PERIOD: 30,
   BIORXIV_RESCAN_DAYS: 2, BIORXIV_NEW_VERSIONS: false, PAGE: 20, FULLTEXT_HIGHLIGHT_SCAN: true,
   JOURNALS: {
     "Cell":"Cell","Nature":"Nature","Science":"Science","Nat Microbiol":"Nature Microbiology",
@@ -250,6 +272,11 @@ const isoDay = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")
 const nowIso = () => new Date().toISOString().slice(0, 19);
 function log(...a) { console.log(new Date().toLocaleTimeString(), ...a); }
 
+let PERIOD = (() => { const v = +localStorage.getItem("pf_period"); return CFG.PERIODS.some(([d]) => d === v) ? v : CFG.DEFAULT_PERIOD; })();
+const periodLabel = d => (CFG.PERIODS.find(([x]) => x === d) || [0, d + " days"])[1];
+const daysAgoIso = n => { const d = new Date(); d.setDate(d.getDate() - n); return isoDay(d); };
+const inPeriod = p => (p.date || "") >= daysAgoIso(PERIOD);
+
 class HttpError extends Error { constructor(status, msg) { super(msg || ("HTTP " + status)); this.status = status; } }
 
 // fetch with timeout and retries (backoff on timeouts / 5xx / 429), like server.py http()
@@ -333,8 +360,8 @@ const qall = (el, s) => [...el.querySelectorAll(s)];
 const tx = (el, s) => { const n = el && qsel(el, s); return n ? n.textContent : ""; };
 
 async function fetchPubmed() {
-  const body = new URLSearchParams({db: "pubmed", term: pubmedTerm(), reldate: CFG.LOOKBACK_DAYS,
-    datetype: "edat", retmax: 500, retmode: "json", tool: "phagefeed"});
+  const body = new URLSearchParams({db: "pubmed", term: pubmedTerm(), reldate: PERIOD,
+    datetype: "edat", retmax: 5000, retmode: "json", tool: "phagefeed"});
   const r = await http(EUTILS + "esearch.fcgi", {method: "POST", body});
   const ids = r.esearchresult.idlist;
   const have = new Set(Object.values(PAPERS).map(p => p.pmid).filter(Boolean));
@@ -455,13 +482,25 @@ async function fetchBiorxiv() {
       STATE.biorxiv_mode = "epmc";
     }
   }
-  return fetchBiorxivViaEpmc();
+  return fetchBiorxivViaEpmc(daysAgoIso(PERIOD), isoDay(new Date()));
+}
+
+// Periods longer than the day-by-day scan (1 year): older bioRxiv preprints come from Europe PMC's
+// searchable copy, fetched once per extension of the window.
+async function fetchBiorxivOlder() {
+  if (PERIOD <= CFG.BIORXIV_SCAN_MAX_DAYS) return 0;
+  const from = daysAgoIso(PERIOD);
+  if (STATE.biorxiv_epmc_from && STATE.biorxiv_epmc_from <= from) return 0;
+  const n = await fetchBiorxivViaEpmc(from, daysAgoIso(CFG.BIORXIV_SCAN_MAX_DAYS + 1));
+  STATE.biorxiv_epmc_from = from;
+  return n;
 }
 
 async function fetchBiorxivApi() {
   const today = new Date(), done = new Set(STATE.biorxiv_days_done || []);
-  const days = [...Array(CFG.BIORXIV_LOOKBACK_DAYS + 1).keys()].map(i => { const d = new Date(today); d.setDate(d.getDate() - i); return d; });
-  const oldest = isoDay(days[days.length - 1]);
+  const span = Math.min(PERIOD, CFG.BIORXIV_SCAN_MAX_DAYS);
+  const days = [...Array(span + 1).keys()].map(i => { const d = new Date(today); d.setDate(d.getDate() - i); return d; });
+  const oldest = daysAgoIso(CFG.BIORXIV_SCAN_MAX_DAYS);   // remember scanned days across period changes
   const todo = days.filter(d => !done.has(isoDay(d)));
   let nNew = 0, scanned = 0; const failed = []; let firstNetErr = null;
   const k = Math.max(1, CFG.BIORXIV_PARALLEL_DAYS);
@@ -486,11 +525,10 @@ async function fetchBiorxivApi() {
   return nNew;
 }
 
-async function fetchBiorxivViaEpmc() {
-  const to = new Date(), from = new Date(); from.setDate(from.getDate() - CFG.BIORXIV_LOOKBACK_DAYS);
-  const q = `(SRC:PPR) AND (PUBLISHER:"bioRxiv") AND ${CFG.EPMC_PREPRINT_TERMS} AND (FIRST_PDATE:[${isoDay(from)} TO ${isoDay(to)}])`;
+async function fetchBiorxivViaEpmc(from, to) {
+  const q = `(SRC:PPR) AND (PUBLISHER:"bioRxiv") AND ${CFG.EPMC_PREPRINT_TERMS} AND (FIRST_PDATE:[${from} TO ${to}])`;
   let cursor = "*", nNew = 0, seen = 0;
-  for (let page = 0; page < 20; page++) {
+  for (let page = 0; page < 40; page++) {
     setPhase(`scanning bioRxiv preprints via Europe PMC (${seen} checked)`);
     const d = await http(EPMC + new URLSearchParams({query: q, resultType: "core", format: "json", pageSize: 200, cursorMark: cursor}));
     const rs = d.resultList?.result || [];
@@ -675,6 +713,10 @@ async function refresh() {
     } catch (e) { errors.push("PubMed: " + (e.message || e)); log(e); }
     try { newTotal += await fetchBiorxiv(); }
     catch (e) { errors.push("bioRxiv: " + (e.message || e)); log(e); }
+    if (STATE.biorxiv_mode !== "epmc") {
+      try { newTotal += await fetchBiorxivOlder(); }
+      catch (e) { errors.push("older bioRxiv: " + (e.message || e)); log(e); }
+    }
     setPhase("writing summaries");
     await summarizePending();
     try { await scanFulltextHighlights(); } catch (e) { errors.push("full-text scan: " + (e.message || e)); }
@@ -687,7 +729,9 @@ async function refresh() {
     render(false); updateStatus();
     log("refresh done", newTotal, errors);
   }
+  if (refreshAgain) { refreshAgain = false; refresh(); }
 }
+let refreshAgain = false;   // period was widened during a refresh
 function maybeAutoRefresh() {
   const last = STATE.last_refresh ? new Date(STATE.last_refresh + "Z") : null;
   if (!last || Date.now() - last > CFG.REFRESH_MS) refresh();
@@ -695,7 +739,7 @@ function maybeAutoRefresh() {
 
 // ============================================================ UI
 const st = (() => { try { return JSON.parse(localStorage.getItem("pf_filters") || "{}"); } catch (_) { return {}; } })();
-const F = {source: st.source || "", journals: st.journals || [], highlights: st.highlights || [], q: ""};
+const F = {source: "", journals: st.journals || [], highlights: st.highlights || [], q: ""};
 let shown = 0;
 const lastSeen = localStorage.getItem("pf_seen") || "";
 const markSeen = () => localStorage.setItem("pf_seen", nowIso());
@@ -713,6 +757,7 @@ function filtered() {
   const q = F.q.trim().toLowerCase();
   hiddenByTerms = 0;
   return Object.values(PAPERS).filter(p =>
+    inPeriod(p) &&
     (!F.source || p.source === F.source) &&
     (!F.journals.length || F.journals.includes(p.journal)) &&
     (!F.highlights.length || F.highlights.some(h => p.highlights.includes(h))) &&
@@ -745,25 +790,66 @@ function card(p) {
     <div class="links">${pdf ? `<a href="${esc(pdf)}" target="_blank" rel="noopener">📄 PDF</a>` : ""}<a href="${esc(page)}" target="_blank" rel="noopener">${p.source === "biorxiv" ? "bioRxiv page" : "Journal page"} ↗</a>${doiLink}${share}</div>
   </article>`;
 }
+let openMenu = null;   // "species" | "terms" | "journals" | null
+function menuData(kind) {
+  const vis = Object.values(PAPERS).filter(p => inPeriod(p) && termVisible(p));
+  if (kind === "species") {
+    const n = {}; for (const p of vis) for (const h of p.highlights) n[h] = (n[h] || 0) + 1;
+    return {hint: "Show only papers that mention the checked species.",
+      all: {label: "Any species", checked: !F.highlights.length},
+      groups: [{items: CFG.HIGHLIGHTS.map(d => ({k: d.name, label: d.name, dot: d.color, n: n[d.name] || 0, checked: F.highlights.includes(d.name)}))}]};
+  }
+  if (kind === "journals") {
+    const n = {}; for (const p of vis) n[p.journal] = (n[p.journal] || 0) + 1;
+    const js = Object.entries(n).sort((a, b) => (b[0] === "bioRxiv") - (a[0] === "bioRxiv") || b[1] - a[1]);
+    for (const j of F.journals) if (!(j in n)) js.push([j, 0]);
+    return {hint: "Show only papers from the checked journals.",
+      all: {label: "All journals", checked: !F.journals.length},
+      groups: [{items: js.map(([j, c]) => ({k: j, label: j, n: c, checked: F.journals.includes(j)}))}]};
+  }
+  const n = {}; for (const p of Object.values(PAPERS).filter(inPeriod)) for (const id of matchedTerms(p)) n[id] = (n[id] || 0) + 1;
+  const terms = TERMS.filter(t => n[t.id] || termsOff.has(t.id));   // skip terms no saved paper matches
+  return {hint: "Unchecking a term hides papers that match only that term.",
+    all: {label: "All terms", checked: !termsOff.size},
+    groups: [...new Set(terms.map(t => t.group))].map(g => ({title: g,
+      items: terms.filter(t => t.group === g).map(t => ({k: t.id, label: t.label, n: n[t.id] || 0, checked: !termsOff.has(t.id)}))}))};
+}
+function menuRow(it, all) {
+  return `<div class="mi${all ? " all" : ""}" role="menuitemcheckbox" aria-checked="${it.checked}" tabindex="0" data-k="${all ? "" : esc(it.k)}" data-all="${all ? 1 : ""}">` +
+    (it.dot ? `<span class="dot" style="background:${it.dot}"></span>` : "") +
+    `<span class="lbl">${esc(it.label)}</span>${it.n != null ? `<span class="n">${it.n}</span>` : ""}<span class="ck" aria-hidden="true">${it.checked ? "✓" : ""}</span></div>`;
+}
+function renderMenu() {
+  const m = $("#menu");
+  if (!openMenu) { m.hidden = true; $("#menuBackdrop").hidden = true; return; }
+  const d = menuData(openMenu), top = m.scrollTop;
+  m.innerHTML = `<div class="mhint">${esc(d.hint)}</div>` + menuRow(d.all, true) +
+    d.groups.map(g => (g.title ? `<div class="mh">${esc(g.title)}</div>` : "") + g.items.map(it => menuRow(it)).join("")).join("") +
+    (d.groups.every(g => !g.items.length) ? '<div class="mhint">Nothing here yet. Tap ↻ to fetch papers.</div>' : "");
+  m.hidden = false; $("#menuBackdrop").hidden = false; m.scrollTop = top;
+}
+function setMenu(kind) {
+  openMenu = kind;
+  document.querySelectorAll(".dd").forEach(b => b.setAttribute("aria-expanded", String(b.dataset.menu === kind)));
+  $("#menu").scrollTop = 0;
+  renderMenu();
+}
+function setPeriod(d) {
+  if (d === PERIOD) return;
+  const wider = d > PERIOD;
+  PERIOD = d; localStorage.setItem("pf_period", String(d));
+  shown = 0; render(false); window.scrollTo({top: 0});
+  if (wider) { if (STATUS.running) refreshAgain = true; else refresh(); }   // fetch the extra time range
+}
 function renderFilters() {
-  const all = Object.values(PAPERS).filter(termVisible), counts = {};
-  for (const p of all) counts[p.journal] = (counts[p.journal] || 0) + 1;
-  const journals = Object.entries(counts).sort((a, b) => (b[0] === "bioRxiv") - (a[0] === "bioRxiv") || b[1] - a[1]);
-  const src = [["", "All"], ["pubmed", "PubMed"], ["biorxiv", "bioRxiv"]]
-    .map(([v, l]) => `<span class="chip src ${F.source === v ? "on" : ""}" data-v="${v}" role="button" tabindex="0">${l}</span>`).join("");
-  const hls = CFG.HIGHLIGHTS.map(d => { const on = F.highlights.includes(d.name);
-    return `<span class="chip hl ${on ? "on" : ""}" data-h="${esc(d.name)}" role="button" tabindex="0" style="border-color:${d.color};${on ? `background:${d.color}` : `color:${d.color}`}">${esc(d.name)}</span>`; }).join("");
-  $("#row1").innerHTML = src + '<span class="sep"></span>' + hls;
-  const tn = {};
-  for (const p of Object.values(PAPERS)) for (const id of matchedTerms(p)) tn[id] = (tn[id] || 0) + 1;
-  const shownTerms = TERMS.filter(t => tn[t.id] || termsOff.has(t.id));   // skip terms no saved paper matches
-  $("#trow").hidden = !shownTerms.length;
-  $("#trow").innerHTML = '<span class="rowlbl">Terms</span>' +
-    (termsOff.size ? '<span class="chip" id="tall" role="button" tabindex="0">All on</span>' : "") +
-    shownTerms.map(t => { const off = termsOff.has(t.id);
-      return `<span class="chip t ${off ? "off" : ""}" data-t="${esc(t.id)}" role="switch" aria-checked="${!off}" tabindex="0">${esc(t.label)}<span class="n">${tn[t.id] || 0}</span></span>`; }).join("");
-  $("#jrow").innerHTML = `<span class="chip ${F.journals.length ? "" : "on"}" id="jclear" role="button" tabindex="0">All journals</span>` +
-    journals.map(([j, n]) => `<span class="chip j ${F.journals.includes(j) ? "on" : ""}" data-j="${esc(j)}" role="button" tabindex="0">${esc(j)}<span class="n">${n}</span></span>`).join("");
+  document.querySelectorAll(".period button").forEach(b => b.setAttribute("aria-checked", String(+b.dataset.days === PERIOD)));
+  const counts = {species: F.highlights.length, journals: F.journals.length, terms: TERMS.filter(t => termsOff.has(t.id)).length};
+  document.querySelectorAll(".dd").forEach(b => {
+    const n = counts[b.dataset.menu], c = b.querySelector(".cnt");
+    c.hidden = !n; c.textContent = b.dataset.menu === "terms" ? `${n} off` : n;
+    b.classList.toggle("active", !!n);
+  });
+  if (openMenu) renderMenu();
 }
 function render(append) {
   const list = filtered(), total = list.length;
@@ -771,11 +857,11 @@ function render(append) {
   const slice = list.slice(append ? shown : 0, keep);
   renderFilters();
   if (append) $("#list").insertAdjacentHTML("beforeend", slice.map(card).join(""));
-  else $("#list").innerHTML = slice.map(card).join("") || (Object.keys(PAPERS).length
-    ? '<div class="empty">No papers match these filters. Clear a filter or turn terms back on to see more.</div>'
-    : '<div class="empty">No papers yet. Tap ↻ to fetch the last 60 days from PubMed and bioRxiv.<br><br>The first scan takes about 10 minutes; keep the app open. If it’s interrupted, it picks up where it stopped.</div>');
+  else $("#list").innerHTML = slice.map(card).join("") || (Object.values(PAPERS).some(inPeriod)
+    ? '<div class="empty">No papers match these filters. Open Species, Terms or Journals above and choose “Any” or “All”, or pick a longer time period.</div>'
+    : '<div class="empty">No papers yet. Tap ↻ to fetch papers from PubMed and bioRxiv.<br><br>The first scan can take several minutes; keep the app open. If it’s interrupted, it picks up where it stopped.</div>');
   shown = Math.min(keep, total);
-  $("#count").textContent = (total ? `Showing ${shown} of ${total} paper${total === 1 ? "" : "s"}, newest first` : "") +
+  $("#count").textContent = (total ? `Showing ${shown} of ${total} paper${total === 1 ? "" : "s"} from the last ${periodLabel(PERIOD).replace(/^1 /, "")}, newest first` : "") +
     (hiddenByTerms ? `${total ? ". " : ""}${hiddenByTerms} hidden by terms you turned off` : "");
   $("#more").hidden = shown >= total;
   $("#more").textContent = `Show ${Math.min(CFG.PAGE, total - shown)} more`;
@@ -795,22 +881,25 @@ function updateStatus() {
     (err ? ` <span class="err">⚠ ${esc(err)}</span>` : "");
 }
 
-function toggleChip(c) {
-  if (c.classList.contains("src")) F.source = c.dataset.v;
-  else if (c.dataset.h) { const h = c.dataset.h; F.highlights = F.highlights.includes(h) ? F.highlights.filter(x => x !== h) : [...F.highlights, h]; }
-  else if (c.dataset.j) { const j = c.dataset.j; F.journals = F.journals.includes(j) ? F.journals.filter(x => x !== j) : [...F.journals, j]; }
-  else if (c.id === "jclear") F.journals = [];
-  else if (c.dataset.t) { const id = c.dataset.t; if (termsOff.has(id)) termsOff.delete(id); else termsOff.add(id); saveTerms(); }
-  else if (c.id === "tall") { termsOff.clear(); saveTerms(); }
-  else return;
+function pickMenuItem(row) {
+  const k = row.dataset.k, all = !!row.dataset.all;
+  if (openMenu === "species") F.highlights = all ? [] : F.highlights.includes(k) ? F.highlights.filter(x => x !== k) : [...F.highlights, k];
+  else if (openMenu === "journals") F.journals = all ? [] : F.journals.includes(k) ? F.journals.filter(x => x !== k) : [...F.journals, k];
+  else if (openMenu === "terms") { if (all) termsOff.clear(); else if (termsOff.has(k)) termsOff.delete(k); else termsOff.add(k); saveTerms(); }
   saveF(); shown = 0; render(false); window.scrollTo({top: 0});
 }
 document.addEventListener("click", e => {
-  const c = e.target.closest(".chip"); if (c) return toggleChip(c);
+  const pb = e.target.closest(".period button"); if (pb) { setMenu(null); return setPeriod(+pb.dataset.days); }
+  const dd = e.target.closest(".dd"); if (dd) return setMenu(openMenu === dd.dataset.menu ? null : dd.dataset.menu);
+  const row = e.target.closest(".mi"); if (row) return pickMenuItem(row);
+  if (e.target.id === "menuBackdrop") return setMenu(null);
   const sh = e.target.closest("[data-share]");
   if (sh) { e.preventDefault(); const p = PAPERS[sh.dataset.share]; if (p) navigator.share({title: p.title, text: `${p.title} (${p.journal}, ${p.date})`, url: safeUrl(p.article_url)}).catch(() => {}); }
 });
-document.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.classList?.contains("chip")) { e.preventDefault(); toggleChip(e.target); } });
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && openMenu) { const b = document.querySelector(`.dd[data-menu="${openMenu}"]`); setMenu(null); b?.focus(); return; }
+  if ((e.key === "Enter" || e.key === " ") && e.target.classList?.contains("mi")) { e.preventDefault(); pickMenuItem(e.target); }
+});
 let qt; $("#q").addEventListener("input", e => { clearTimeout(qt); qt = setTimeout(() => { F.q = e.target.value; shown = 0; render(false); }, 200); });
 $("#more").onclick = () => render(true);
 $("#refresh").onclick = () => refresh();
@@ -818,6 +907,7 @@ window.addEventListener("online", () => { STATUS.last_error = null; updateStatus
 
 // settings sheet
 $("#gear").onclick = () => {
+  setMenu(null);
   const s = loadSettings(), f = $("#settings form");
   for (const [k, v] of Object.entries(s)) if (f.elements[k]) f.elements[k].value = v;
   $("#settings").showModal();
