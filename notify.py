@@ -19,9 +19,12 @@ Settings come from environment variables (GitHub repository secrets):
   ANTHROPIC_API_KEY          optional: Claude summaries in the email (else key sentences)
   APP_URL                    optional: link to your PhageFeed iPhone app, shown in the email
   ONLY_HIGHLIGHTS            optional: "yes" = only email papers mentioning Listeria/Nostoc/Clostridium
+  TEST_EMAIL                 "true" = send the last TEST_DAYS (default 7) days of papers to you only;
+                             subscribers get nothing and the workflow does not save this run's database
 """
 import html
 import os
+import datetime as dt
 import json
 import smtplib
 import ssl
@@ -52,6 +55,20 @@ def https(u):
 
 def have_smtp():
     return bool(env("SMTP_USER") and env("SMTP_PASSWORD"))
+
+
+def buttondown_draft(subject, html_body):
+    """Save an unsent draft in Buttondown (for previewing / 'Send test' there)."""
+    req = urllib.request.Request(
+        "https://api.buttondown.com/v1/emails", method="POST",
+        data=json.dumps({"subject": subject, "body": html_body, "status": "draft"}).encode(),
+        headers={"Authorization": "Token " + env("BUTTONDOWN_API_KEY"), "Content-Type": "application/json",
+                 "User-Agent": S.UA})
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r:
+            print("saved as a draft in Buttondown (HTTP %d): open Emails -> Drafts there to preview it" % r.status)
+    except urllib.error.HTTPError as e:
+        sys.exit("Buttondown refused the draft (HTTP %d): %s" % (e.code, e.read().decode("utf-8", "replace")[:800]))
 
 
 def send_to_subscribers(subject, html_body):
@@ -136,7 +153,43 @@ def wrap(inner):
     return ('<div style="font-family:-apple-system,Helvetica,Arial,sans-serif;max-width:640px">%s%s</div>' % (inner, foot))
 
 
+def load_rows(sql, args=()):
+    with S.db() as con:
+        rows = [dict(r) for r in con.execute(sql, args)]
+    for r in rows:
+        r["highlights"] = json.loads(r["highlights"] or "[]")
+        r["highlight_where"] = json.loads(r["highlight_where"] or "{}")
+    return rows
+
+
+def test_email():
+    """Fetch as usual, then send the recent papers to you only."""
+    days = int(env("TEST_DAYS", "7"))
+    S.init_db()
+    S.refresh()
+    with S._sum_lock:
+        pass
+    S.summarize_pending()
+    since = (dt.date.today() - dt.timedelta(days=days)).isoformat()
+    rows = load_rows("SELECT * FROM papers WHERE date >= ? ORDER BY (highlights != '[]') DESC, date DESC LIMIT 40", (since,))
+    if env("ONLY_HIGHLIGHTS").lower() in ("1", "yes", "true"):
+        rows = [r for r in rows if r["highlights"]]
+    subject = "PhageFeed test: %d paper%s from the last %d days" % (len(rows), "" if len(rows) == 1 else "s", days)
+    note = ('<p style="font-size:12px;color:#6e6e73">Test email: this is what the daily update looks like. '
+            'Only you received it.</p>')
+    body = wrap(note + ("".join(paper_html(r) for r in rows) or "<p>No papers in this period.</p>"))
+    if have_smtp():
+        send(subject, "\n".join(paper_text(r) for r in rows) or "No papers in this period.", body)
+    elif env("BUTTONDOWN_API_KEY"):
+        buttondown_draft(subject, body)
+    else:
+        sys.exit("No way to send email: set SMTP_USER and SMTP_PASSWORD (or BUTTONDOWN_API_KEY) - see the README.")
+    print("test done, errors:", S.STATUS.get("last_error"))
+
+
 def main():
+    if env("TEST_EMAIL").lower() == "true":
+        return test_email()
     subscribers = bool(env("BUTTONDOWN_API_KEY"))
     if not subscribers and not have_smtp():
         sys.exit("No way to send email: set BUTTONDOWN_API_KEY, or SMTP_USER and SMTP_PASSWORD - see the README.")
@@ -151,13 +204,9 @@ def main():
     S.summarize_pending()             # ... then summarize anything left
     errors = S.STATUS.get("last_error")
 
-    with S.db() as con:
-        total = con.execute("SELECT COUNT(*) FROM papers").fetchone()[0]
-        rows = [dict(r) for r in con.execute("SELECT * FROM papers ORDER BY (highlights != '[]') DESC, date DESC")
-                if r["id"] not in known]
-    for r in rows:
-        r["highlights"] = S.json.loads(r["highlights"] or "[]")
-        r["highlight_where"] = S.json.loads(r["highlight_where"] or "{}")
+    rows = load_rows("SELECT * FROM papers ORDER BY (highlights != '[]') DESC, date DESC")
+    total = len(rows)
+    rows = [r for r in rows if r["id"] not in known]
 
     if before == 0:
         # First run (or the stored database expired): record what exists now, don't email all of it.
