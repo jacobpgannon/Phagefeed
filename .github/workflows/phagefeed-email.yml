@@ -24,7 +24,7 @@ jobs:
           restore-keys: phagefeed-db-
 
       - name: Check for new papers and email them
-        run: python3 notifier/notify.py
+        run: python3 notify.py
         env:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
