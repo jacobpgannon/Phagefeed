@@ -104,7 +104,7 @@ dialog .tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;padding-top:14
 <dialog id="subscribe">
   <form id="subForm" method="post" target="_blank">
     <h3>Get new papers by email</h3>
-    <div class="help">One email whenever new phage and bacterial-immunity papers appear, checked every hour. Every email has an unsubscribe link.</div>
+    <div class="help">One email each morning with the new phage and bacterial-immunity papers, only on days when there are some. Every email has an unsubscribe link.</div>
     <label for="sub-email">Your email</label>
     <input id="sub-email" name="email" type="email" required autocomplete="email" placeholder="you@university.edu">
     <input type="hidden" name="embed" value="1">
@@ -205,7 +205,7 @@ const CFG = {
     "mechanism. No preamble, no bullet points.\n\nTitle: {title}\nJournal: {journal}\n\nAbstract: {abstract}",
   // Used only if the bioRxiv API refuses browser requests: Europe PMC indexes bioRxiv preprints.
   // Email updates: your Buttondown username (buttondown.com/<username>). Leave "" to hide the ✉︎ button.
-  EMAIL_SIGNUP_USERNAME: "gannon",
+  EMAIL_SIGNUP_USERNAME: "",
   EPMC_PREPRINT_TERMS: '(phage OR phages OR bacteriophage* OR prophage* OR "anti-phage" OR antiphage OR "anti-CRISPR" ' +
     'OR "bacterial immunity" OR "prokaryotic immunity" OR "defense system" OR "defence system" OR "abortive infection" ' +
     'OR "restriction-modification" OR CBASS OR retron* OR Thoeris OR Gabija OR Zorya OR BREX OR CRISPR)'

@@ -173,7 +173,7 @@ def main():
         if rows:
             n = len(rows)
             hls = sorted({h for r in rows for h in r["highlights"]})
-            subject = "%d new phage paper%s" % (n, "" if n == 1 else "s") + (" (%s)" % ", ".join(hls) if hls else "")
+            subject = "PhageFeed daily: %d new phage paper%s" % (n, "" if n == 1 else "s") + (" (%s)" % ", ".join(hls) if hls else "")
             body = wrap("".join(paper_html(r) for r in rows))
             if subscribers:
                 send_to_subscribers(subject, body)
