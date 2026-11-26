@@ -78,12 +78,9 @@ dialog .help{font-size:12px;color:var(--mute);margin-top:4px}
 dialog .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
 dialog .tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
 .err{color:var(--red)}
-#termList h4{font-size:13px;color:var(--mute);font-weight:600;margin:16px 0 4px}
-.term{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:15px;cursor:pointer}
-.term span{flex:1}
-.term small{color:var(--mute);font-size:12px}
-.term input{width:auto;margin:0;transform:scale(1.15);accent-color:var(--acc)}
-#termsDlg .actions{flex-wrap:wrap}
+.rowlbl{font-size:12.5px;color:var(--mute);align-self:center;flex:none;padding-right:2px}
+.chip.t{border-color:color-mix(in srgb, var(--acc) 45%, var(--line))}
+.chip.t.off{opacity:.5;text-decoration:line-through;border-color:var(--line);border-style:dashed}
 :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 </style>
 </head>
@@ -99,6 +96,7 @@ dialog .tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;padding-top:14
   <input id="q" type="search" placeholder="Search title, abstract, author" autocomplete="off" enterkeyhint="search">
   <div class="scroller" id="row1"></div>
   <div class="scroller" id="jrow"></div>
+  <div class="scroller" id="trow" aria-label="Search terms: tap to turn a term off or on"></div>
 </header>
 <main>
   <div id="installTip" class="tip" hidden><b>Add PhageFeed to your Home Screen</b> so it opens full-screen and keeps your papers: tap Share, then <b>Add to Home Screen</b>.<br><button id="tipClose">Got it</button></div>
@@ -119,18 +117,6 @@ dialog .tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;padding-top:14
   </form>
 </dialog>
 
-<dialog id="termsDlg">
-  <h3>Search terms</h3>
-  <div class="help">A paper shows if it matches at least one term that’s on. Turning a term off hides papers that match only that term; nothing is deleted. Numbers are papers matching each term.</div>
-  <div id="termList"></div>
-  <div class="help" id="termMsg"></div>
-  <div class="actions">
-    <button type="button" id="termsAll">Turn all on</button>
-    <button type="button" id="termsCopy">Copy for daily email</button>
-    <button type="button" id="termsDone" class="primary">Done</button>
-  </div>
-</dialog>
-
 <dialog id="settings">
   <form method="dialog">
     <h3>Settings</h3>
@@ -149,7 +135,6 @@ dialog .tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;padding-top:14
     <div class="help">Finds more open-access PDFs.</div>
     <div class="actions"><button value="cancel">Cancel</button><button value="save" class="primary">Save</button></div>
     <div class="tools">
-      <button type="button" id="termsBtn">Search terms</button>
       <button type="button" id="exportBtn">Export backup</button>
       <button type="button" id="importBtn">Import backup</button>
       <button type="button" id="resetBtn" class="err">Clear all papers</button>
@@ -758,9 +743,15 @@ function renderFilters() {
     .map(([v, l]) => `<span class="chip src ${F.source === v ? "on" : ""}" data-v="${v}" role="button" tabindex="0">${l}</span>`).join("");
   const hls = CFG.HIGHLIGHTS.map(d => { const on = F.highlights.includes(d.name);
     return `<span class="chip hl ${on ? "on" : ""}" data-h="${esc(d.name)}" role="button" tabindex="0" style="border-color:${d.color};${on ? `background:${d.color}` : `color:${d.color}`}">${esc(d.name)}</span>`; }).join("");
-  const offN = TERMS.filter(t => termsOff.has(t.id)).length;
-  $("#row1").innerHTML = src + '<span class="sep"></span>' + hls + '<span class="sep"></span>' +
-    `<span class="chip ${offN ? "on" : ""}" id="termsChip" role="button" tabindex="0">Search terms${offN ? ` (${offN} off)` : ""}</span>`;
+  $("#row1").innerHTML = src + '<span class="sep"></span>' + hls;
+  const tn = {};
+  for (const p of Object.values(PAPERS)) for (const id of matchedTerms(p)) tn[id] = (tn[id] || 0) + 1;
+  const shownTerms = TERMS.filter(t => tn[t.id] || termsOff.has(t.id));   // skip terms no saved paper matches
+  $("#trow").hidden = !shownTerms.length;
+  $("#trow").innerHTML = '<span class="rowlbl">Terms</span>' +
+    (termsOff.size ? '<span class="chip" id="tall" role="button" tabindex="0">All on</span>' : "") +
+    shownTerms.map(t => { const off = termsOff.has(t.id);
+      return `<span class="chip t ${off ? "off" : ""}" data-t="${esc(t.id)}" role="switch" aria-checked="${!off}" tabindex="0">${esc(t.label)}<span class="n">${tn[t.id] || 0}</span></span>`; }).join("");
   $("#jrow").innerHTML = `<span class="chip ${F.journals.length ? "" : "on"}" id="jclear" role="button" tabindex="0">All journals</span>` +
     journals.map(([j, n]) => `<span class="chip j ${F.journals.includes(j) ? "on" : ""}" data-j="${esc(j)}" role="button" tabindex="0">${esc(j)}<span class="n">${n}</span></span>`).join("");
 }
@@ -771,11 +762,11 @@ function render(append) {
   renderFilters();
   if (append) $("#list").insertAdjacentHTML("beforeend", slice.map(card).join(""));
   else $("#list").innerHTML = slice.map(card).join("") || (Object.keys(PAPERS).length
-    ? '<div class="empty">No papers match these filters. Clear a filter or turn search terms back on to see more.</div>'
+    ? '<div class="empty">No papers match these filters. Clear a filter or turn terms back on to see more.</div>'
     : '<div class="empty">No papers yet. Tap ↻ Refresh to fetch the last 60 days from PubMed and bioRxiv.<br><br>The first scan takes about 10 minutes; keep the app open. If it’s interrupted, it picks up where it stopped.</div>');
   shown = Math.min(keep, total);
   $("#count").textContent = (total ? `Showing ${shown} of ${total} paper${total === 1 ? "" : "s"}, newest first` : "") +
-    (hiddenByTerms ? `${total ? ". " : ""}${hiddenByTerms} hidden by search terms you turned off` : "");
+    (hiddenByTerms ? `${total ? ". " : ""}${hiddenByTerms} hidden by terms you turned off` : "");
   $("#more").hidden = shown >= total;
   $("#more").textContent = `Show ${Math.min(CFG.PAGE, total - shown)} more`;
 }
@@ -799,7 +790,8 @@ function toggleChip(c) {
   else if (c.dataset.h) { const h = c.dataset.h; F.highlights = F.highlights.includes(h) ? F.highlights.filter(x => x !== h) : [...F.highlights, h]; }
   else if (c.dataset.j) { const j = c.dataset.j; F.journals = F.journals.includes(j) ? F.journals.filter(x => x !== j) : [...F.journals, j]; }
   else if (c.id === "jclear") F.journals = [];
-  else if (c.id === "termsChip") return openTerms();
+  else if (c.dataset.t) { const id = c.dataset.t; if (termsOff.has(id)) termsOff.delete(id); else termsOff.add(id); saveTerms(); }
+  else if (c.id === "tall") { termsOff.clear(); saveTerms(); }
   else return;
   saveF(); shown = 0; render(false); window.scrollTo({top: 0});
 }
@@ -826,32 +818,7 @@ $("#settings").addEventListener("close", () => {
   for (const k of Object.keys(DEFAULT_SETTINGS)) if (f.elements[k]) s[k] = f.elements[k].value.trim();
   saveSettings(s); summaryError = null; updateStatus(); summarizePending();
 });
-function renderTerms() {
-  const all = Object.values(PAPERS), n = {};
-  for (const p of all) for (const id of matchedTerms(p)) n[id] = (n[id] || 0) + 1;
-  const groups = [...new Set(TERMS.map(t => t.group))];
-  $("#termList").innerHTML = TERMS.length ? groups.map(g => `<h4>${esc(g)}</h4>` + TERMS.filter(t => t.group === g).map(t =>
-    `<label class="term"><span>${esc(t.label)} <small>${n[t.id] || 0}</small></span><input type="checkbox" switch data-term="${esc(t.id)}" ${termsOff.has(t.id) ? "" : "checked"}></label>`).join("")).join("")
-    : '<p class="help">The search-term list (terms.json) didn’t load. Make sure it’s uploaded next to index.html.</p>';
-  filtered();
-  $("#termMsg").textContent = hiddenByTerms ? `${hiddenByTerms} paper${hiddenByTerms === 1 ? "" : "s"} hidden right now.` : "";
-}
-function openTerms() { if ($("#settings").open) $("#settings").close(); renderTerms(); $("#termsDlg").showModal(); }
-function saveTerms() { localStorage.setItem("pf_terms_off", JSON.stringify([...termsOff])); shown = 0; render(false); renderTerms(); }
-$("#termList").addEventListener("change", e => {
-  const id = e.target.dataset.term; if (!id) return;
-  if (e.target.checked) termsOff.delete(id); else termsOff.add(id);
-  saveTerms();
-});
-$("#termsBtn").onclick = openTerms;
-$("#termsAll").onclick = () => { termsOff.clear(); saveTerms(); };
-$("#termsDone").onclick = () => $("#termsDlg").close();
-$("#termsCopy").onclick = async () => {
-  const v = TERMS.filter(t => termsOff.has(t.id)).map(t => t.id).join(",");
-  if (!v) { $("#termMsg").textContent = "All terms are on, so the daily email needs no change (leave DISABLED_TERMS empty or delete it)."; return; }
-  try { await navigator.clipboard.writeText(v); $("#termMsg").textContent = `Copied “${v}”. Paste it as the DISABLED_TERMS variable on GitHub (see README).`; }
-  catch (_) { $("#termMsg").textContent = `Copy this into the DISABLED_TERMS variable on GitHub: ${v}`; }
-};
+function saveTerms() { localStorage.setItem("pf_terms_off", JSON.stringify([...termsOff])); }
 
 $("#exportBtn").onclick = async () => {
   const blob = new Blob([JSON.stringify({version: 1, exported: nowIso(), papers: PAPERS, state: STATE})], {type: "application/json"});

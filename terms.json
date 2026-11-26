@@ -1,5 +1,5 @@
 {
- "_note": "Search terms you can switch on and off in the app (Search terms) and in the daily email (DISABLED_TERMS). A paper is shown if it matches at least one term that is on. Patterns are case-insensitive regular expressions.",
+ "_note": "Search terms you can tap on and off in the app's Terms row. A paper is shown if it matches at least one term that is on. Patterns are case-insensitive regular expressions.",
  "terms": [
   {
    "id": "phage",
