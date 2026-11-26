@@ -5,9 +5,16 @@ Runs your original PhageFeed engine (server.py + config.py, unchanged) once, on 
 in GitHub Actions, and emails you the papers it has not seen before. The paper database is kept
 between runs in the GitHub Actions cache.
 
+Who gets the emails:
+  BUTTONDOWN_API_KEY set     paper emails go to everyone subscribed through the website (Buttondown
+                             handles confirmation and unsubscribe links)
+  otherwise                  paper emails go to you through SMTP (below)
+
 Settings come from environment variables (GitHub repository secrets):
-  SMTP_USER, SMTP_PASSWORD   sending account (e.g. a Gmail address + app password)   required
-  MAIL_TO                    where alerts go (default: SMTP_USER)
+  BUTTONDOWN_API_KEY         optional: send to website subscribers via Buttondown
+  SMTP_USER, SMTP_PASSWORD   your sending account (e.g. Gmail + app password); required without Buttondown,
+                             optional with it (then used only for the one-time "alerts are on" email to you)
+  MAIL_TO                    where your own emails go (default: SMTP_USER)
   SMTP_HOST, SMTP_PORT       default smtp.gmail.com, 465
   ANTHROPIC_API_KEY          optional: Claude summaries in the email (else key sentences)
   APP_URL                    optional: link to your PhageFeed iPhone app, shown in the email
@@ -15,9 +22,12 @@ Settings come from environment variables (GitHub repository secrets):
 """
 import html
 import os
+import json
 import smtplib
 import ssl
 import sys
+import urllib.error
+import urllib.request
 from email.message import EmailMessage
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -40,10 +50,29 @@ def https(u):
     return u if isinstance(u, str) and u.startswith("https://") else ""
 
 
+def have_smtp():
+    return bool(env("SMTP_USER") and env("SMTP_PASSWORD"))
+
+
+def send_to_subscribers(subject, html_body):
+    """Create and send one Buttondown email to every confirmed subscriber.
+    Sent once, without retries, so a slow reply can never cause a duplicate email."""
+    req = urllib.request.Request(
+        "https://api.buttondown.com/v1/emails", method="POST",
+        data=json.dumps({"subject": subject, "body": html_body, "status": "about_to_send"}).encode(),
+        headers={"Authorization": "Token " + env("BUTTONDOWN_API_KEY"), "Content-Type": "application/json",
+                 "X-Buttondown-Live-Dangerously": "true", "User-Agent": S.UA})
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r:
+            print("sent to subscribers via Buttondown:", subject, "(HTTP %d)" % r.status)
+    except urllib.error.HTTPError as e:
+        sys.exit("Buttondown refused the email (HTTP %d): %s" % (e.code, e.read().decode("utf-8", "replace")[:800]))
+
+
 def send(subject, text_body, html_body):
     user, pw = env("SMTP_USER"), env("SMTP_PASSWORD")
     if not user or not pw:
-        sys.exit("SMTP_USER and SMTP_PASSWORD secrets are not set - see the README, 'Email alerts'.")
+        sys.exit("No way to send email: set BUTTONDOWN_API_KEY, or SMTP_USER and SMTP_PASSWORD - see the README.")
     host, port = env("SMTP_HOST", "smtp.gmail.com"), int(env("SMTP_PORT", "465"))
     msg = EmailMessage()
     msg["Subject"], msg["From"], msg["To"] = subject, "PhageFeed <%s>" % user, env("MAIL_TO", user)
@@ -108,6 +137,9 @@ def wrap(inner):
 
 
 def main():
+    subscribers = bool(env("BUTTONDOWN_API_KEY"))
+    if not subscribers and not have_smtp():
+        sys.exit("No way to send email: set BUTTONDOWN_API_KEY, or SMTP_USER and SMTP_PASSWORD - see the README.")
     S.init_db()
     with S.db() as con:
         known = {r[0] for r in con.execute("SELECT id FROM papers")}
@@ -129,7 +161,7 @@ def main():
 
     if before == 0:
         # First run (or the stored database expired): record what exists now, don't email all of it.
-        if total:
+        if total and have_smtp():           # only to you, never to subscribers
             send("PhageFeed email alerts are on",
                  "PhageFeed is now tracking %d recent papers. You'll get an email when new ones appear." % total,
                  wrap("<p>PhageFeed is now tracking <b>%d</b> recent papers. You'll get an email like this "
@@ -142,7 +174,11 @@ def main():
             n = len(rows)
             hls = sorted({h for r in rows for h in r["highlights"]})
             subject = "%d new phage paper%s" % (n, "" if n == 1 else "s") + (" (%s)" % ", ".join(hls) if hls else "")
-            send(subject, "\n".join(paper_text(r) for r in rows), wrap("".join(paper_html(r) for r in rows)))
+            body = wrap("".join(paper_html(r) for r in rows))
+            if subscribers:
+                send_to_subscribers(subject, body)
+            else:
+                send(subject, "\n".join(paper_text(r) for r in rows), body)
         else:
             print("no new papers")
 

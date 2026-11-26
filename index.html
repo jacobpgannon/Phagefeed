@@ -86,6 +86,7 @@ dialog .tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;padding-top:14
   <div class="top">
     <h1>🧬 PhageFeed</h1>
     <button id="refresh" class="primary" aria-label="Fetch new papers now">↻ Refresh</button>
+    <button id="mailBtn" class="icon" aria-label="Get new papers by email" hidden>✉︎</button>
     <button id="gear" class="icon" aria-label="Settings">⚙︎</button>
   </div>
   <div id="status">…</div>
@@ -99,6 +100,18 @@ dialog .tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;padding-top:14
   <div id="list"></div>
   <button id="more" hidden>Show 20 more</button>
 </main>
+
+<dialog id="subscribe">
+  <form id="subForm" method="post" target="_blank">
+    <h3>Get new papers by email</h3>
+    <div class="help">One email whenever new phage and bacterial-immunity papers appear, checked every hour. Every email has an unsubscribe link.</div>
+    <label for="sub-email">Your email</label>
+    <input id="sub-email" name="email" type="email" required autocomplete="email" placeholder="you@university.edu">
+    <input type="hidden" name="embed" value="1">
+    <div id="subDone" class="help" hidden><b>Almost done:</b> open the confirmation email we just sent and tap the link. Updates start after that.</div>
+    <div class="actions"><button type="button" id="subClose">Close</button><button type="submit" class="primary" id="subGo">Subscribe</button></div>
+  </form>
+</dialog>
 
 <dialog id="settings">
   <form method="dialog">
@@ -191,6 +204,8 @@ const CFG = {
     "(1) the key finding, with specific system/organism names; (2) why it matters or the " +
     "mechanism. No preamble, no bullet points.\n\nTitle: {title}\nJournal: {journal}\n\nAbstract: {abstract}",
   // Used only if the bioRxiv API refuses browser requests: Europe PMC indexes bioRxiv preprints.
+  // Email updates: your Buttondown username (buttondown.com/<username>). Leave "" to hide the ✉︎ button.
+  EMAIL_SIGNUP_USERNAME: "",
   EPMC_PREPRINT_TERMS: '(phage OR phages OR bacteriophage* OR prophage* OR "anti-phage" OR antiphage OR "anti-CRISPR" ' +
     'OR "bacterial immunity" OR "prokaryotic immunity" OR "defense system" OR "defence system" OR "abortive infection" ' +
     'OR "restriction-modification" OR CBASS OR retron* OR Thoeris OR Gabija OR Zorya OR BREX OR CRISPR)'
@@ -794,6 +809,18 @@ $("#resetBtn").onclick = async () => {
   if (!confirm("Delete all saved papers from this iPhone? Your settings stay.")) return;
   PAPERS = {}; STATE = {}; await persist(true); $("#settings").close(); render(false); updateStatus();
 };
+
+// email sign-up (Buttondown stores the address and sends the confirmation email)
+if (/^[A-Za-z0-9_-]+$/.test(CFG.EMAIL_SIGNUP_USERNAME)) {
+  $("#subForm").action = `https://buttondown.com/api/emails/embed-subscribe/${CFG.EMAIL_SIGNUP_USERNAME}`;
+  $("#mailBtn").hidden = false;
+  $("#mailBtn").onclick = () => { $("#subDone").hidden = true; $("#subGo").disabled = false; $("#subscribe").showModal(); };
+  $("#subClose").onclick = () => $("#subscribe").close();
+  $("#subForm").addEventListener("submit", () => {
+    // the form opens Buttondown's confirmation page in a new tab; show next steps here
+    setTimeout(() => { $("#subDone").hidden = false; $("#subGo").disabled = true; $("#sub-email").value = ""; }, 300);
+  });
+}
 
 // install hint (Safari tab only, not once installed)
 const standalone = window.navigator.standalone || matchMedia("(display-mode: standalone)").matches;
