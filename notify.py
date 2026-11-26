@@ -19,6 +19,8 @@ Settings come from environment variables (GitHub repository secrets):
   ANTHROPIC_API_KEY          optional: Claude summaries in the email (else key sentences)
   APP_URL                    optional: link to your PhageFeed iPhone app, shown in the email
   ONLY_HIGHLIGHTS            optional: "yes" = only email papers mentioning Listeria/Nostoc/Clostridium
+  DISABLED_TERMS             optional (GitHub *variable*): comma-separated term ids from terms.json to switch off,
+                             e.g. "phage,jumbo" - copy it from the app's Search terms sheet
   TEST_EMAIL                 "true" = send the last TEST_DAYS (default 7) days of papers to you only;
                              subscribers get nothing and the workflow does not save this run's database
 """
@@ -26,6 +28,7 @@ import html
 import os
 import datetime as dt
 import json
+import re
 import smtplib
 import ssl
 import sys
@@ -153,6 +156,41 @@ def wrap(inner):
     return ('<div style="font-family:-apple-system,Helvetica,Arial,sans-serif;max-width:640px">%s%s</div>' % (inner, foot))
 
 
+def load_terms():
+    """Toggleable search terms shared with the iPhone app (terms.json next to this file)."""
+    path = os.path.join(HERE, "terms.json")
+    if not os.path.exists(path):
+        return []
+    with open(path, encoding="utf-8") as f:
+        terms = json.load(f).get("terms", [])
+    out = []
+    for t in terms:
+        try:
+            out.append((t["id"], re.compile(t["pattern"], re.I)))
+        except (KeyError, re.error) as e:
+            print("skipping search term", t.get("id"), e)
+    return out
+
+
+def apply_terms(rows):
+    """Drop papers whose every matching term is switched off (papers matching no listed term stay)."""
+    off = {x.strip().lower() for x in env("DISABLED_TERMS").split(",") if x.strip()}
+    if not off:
+        return rows
+    terms = load_terms()
+    unknown = off - {i for i, _ in terms}
+    if unknown:
+        print("DISABLED_TERMS has ids not in terms.json (ignored):", ", ".join(sorted(unknown)))
+    keep = []
+    for r in rows:
+        text = r["title"] + " " + (r.get("abstract") or "")
+        hits = [i for i, rx in terms if rx.search(text)]
+        if not hits or any(i not in off for i in hits):
+            keep.append(r)
+    print("search terms off: %s -> %d of %d papers kept" % (", ".join(sorted(off)), len(keep), len(rows)))
+    return keep
+
+
 def load_rows(sql, args=()):
     with S.db() as con:
         rows = [dict(r) for r in con.execute(sql, args)]
@@ -172,6 +210,7 @@ def test_email():
     S.summarize_pending()
     since = (dt.date.today() - dt.timedelta(days=days)).isoformat()
     rows = load_rows("SELECT * FROM papers WHERE date >= ? ORDER BY (highlights != '[]') DESC, date DESC LIMIT 40", (since,))
+    rows = apply_terms(rows)
     if env("ONLY_HIGHLIGHTS").lower() in ("1", "yes", "true"):
         rows = [r for r in rows if r["highlights"]]
     subject = "PhageFeed test: %d paper%s from the last %d days" % (len(rows), "" if len(rows) == 1 else "s", days)
@@ -217,6 +256,7 @@ def main():
                       "whenever new ones appear.</p>" % total))
         print("baseline run: %d papers recorded, errors=%s" % (total, errors))
     else:
+        rows = apply_terms(rows)
         if env("ONLY_HIGHLIGHTS").lower() in ("1", "yes", "true"):
             rows = [r for r in rows if r["highlights"]]
         if rows:

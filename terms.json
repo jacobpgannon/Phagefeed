@@ -1,0 +1,203 @@
+{
+ "_note": "Search terms you can switch on and off in the app (Search terms) and in the daily email (DISABLED_TERMS). A paper is shown if it matches at least one term that is on. Patterns are case-insensitive regular expressions.",
+ "terms": [
+  {
+   "id": "phage",
+   "label": "Phage, phages",
+   "group": "Phages",
+   "pattern": "(?<!anti-)(?<!anti)\\bphages?\\b"
+  },
+  {
+   "id": "bacteriophage",
+   "label": "Bacteriophage",
+   "group": "Phages",
+   "pattern": "\\bbacteriophages?\\b"
+  },
+  {
+   "id": "prophage",
+   "label": "Prophage",
+   "group": "Phages",
+   "pattern": "\\bprophages?\\b"
+  },
+  {
+   "id": "mycobacteriophage",
+   "label": "Mycobacteriophage",
+   "group": "Phages",
+   "pattern": "\\bmycobacteriophages?\\b"
+  },
+  {
+   "id": "coliphage",
+   "label": "Coliphage",
+   "group": "Phages",
+   "pattern": "\\bcoliphages?\\b"
+  },
+  {
+   "id": "other_phages",
+   "label": "Vibrio-, cyano-, staphylo-, archaeophages",
+   "group": "Phages",
+   "pattern": "\\b(vibrio|cyano|staphylo|archaeo)(bacterio)?phages?\\b"
+  },
+  {
+   "id": "jumbo",
+   "label": "Jumbo / giant phages",
+   "group": "Phages",
+   "pattern": "\\b(jumbo|giant)[- ]?(bacterio)?phages?\\b"
+  },
+  {
+   "id": "phageome",
+   "label": "Phageome",
+   "group": "Phages",
+   "pattern": "\\bphageomes?\\b"
+  },
+  {
+   "id": "antiphage",
+   "label": "Anti-phage",
+   "group": "Bacterial immunity",
+   "pattern": "\\banti-?phages?\\b"
+  },
+  {
+   "id": "anticrispr",
+   "label": "Anti-CRISPR",
+   "group": "Bacterial immunity",
+   "pattern": "\\banti-?CRISPRs?\\b"
+  },
+  {
+   "id": "bacterial_immunity",
+   "label": "Bacterial / prokaryotic immunity",
+   "group": "Bacterial immunity",
+   "pattern": "\\b(bacterial|prokaryotic|microbial) (innate |adaptive )?immun"
+  },
+  {
+   "id": "crispr",
+   "label": "CRISPR",
+   "group": "Bacterial immunity",
+   "pattern": "(?<!anti-)(?<!anti)\\bCRISPR"
+  },
+  {
+   "id": "crispr_adaptation",
+   "label": "Spacer acquisition / CRISPR adaptation",
+   "group": "Bacterial immunity",
+   "pattern": "\\b(spacer acquisition|CRISPR adaptation)"
+  },
+  {
+   "id": "defense_systems",
+   "label": "Defense systems",
+   "group": "Bacterial immunity",
+   "pattern": "\\b(anti-?viral )?defen[cs]e systems?\\b"
+  },
+  {
+   "id": "abi",
+   "label": "Abortive infection",
+   "group": "Bacterial immunity",
+   "pattern": "\\babortive infection"
+  },
+  {
+   "id": "rm",
+   "label": "Restriction-modification",
+   "group": "Bacterial immunity",
+   "pattern": "\\brestriction[- ]modification"
+  },
+  {
+   "id": "cbass",
+   "label": "CBASS",
+   "group": "Named defense systems",
+   "pattern": "\\bCBASS\\b"
+  },
+  {
+   "id": "thoeris",
+   "label": "Thoeris",
+   "group": "Named defense systems",
+   "pattern": "\\bThoeris\\b"
+  },
+  {
+   "id": "gabija",
+   "label": "Gabija",
+   "group": "Named defense systems",
+   "pattern": "\\bGabija\\b"
+  },
+  {
+   "id": "zorya",
+   "label": "Zorya",
+   "group": "Named defense systems",
+   "pattern": "\\bZorya\\b"
+  },
+  {
+   "id": "septu",
+   "label": "Septu",
+   "group": "Named defense systems",
+   "pattern": "\\bSeptu\\b"
+  },
+  {
+   "id": "lamassu",
+   "label": "Lamassu",
+   "group": "Named defense systems",
+   "pattern": "\\bLamassu\\b"
+  },
+  {
+   "id": "wadjet",
+   "label": "Wadjet",
+   "group": "Named defense systems",
+   "pattern": "\\bWadjet\\b"
+  },
+  {
+   "id": "brex",
+   "label": "BREX",
+   "group": "Named defense systems",
+   "pattern": "\\bBREX\\b"
+  },
+  {
+   "id": "disarm",
+   "label": "DISARM",
+   "group": "Named defense systems",
+   "pattern": "\\bDISARM\\b"
+  },
+  {
+   "id": "druantia",
+   "label": "Druantia",
+   "group": "Named defense systems",
+   "pattern": "\\bDruantia\\b"
+  },
+  {
+   "id": "hachiman",
+   "label": "Hachiman",
+   "group": "Named defense systems",
+   "pattern": "\\bHachiman\\b"
+  },
+  {
+   "id": "kiwa",
+   "label": "Kiwa",
+   "group": "Named defense systems",
+   "pattern": "\\bKiwa\\b"
+  },
+  {
+   "id": "shedu",
+   "label": "Shedu",
+   "group": "Named defense systems",
+   "pattern": "\\bShedu\\b"
+  },
+  {
+   "id": "dsr",
+   "label": "DSR1 / DSR2",
+   "group": "Named defense systems",
+   "pattern": "\\bDSR[12]\\b"
+  },
+  {
+   "id": "retrons",
+   "label": "Retrons",
+   "group": "Named defense systems",
+   "pattern": "\\bretrons?\\b"
+  },
+  {
+   "id": "pagos",
+   "label": "pAgos / prokaryotic Argonautes",
+   "group": "Named defense systems",
+   "pattern": "\\b(pAgos?|prokaryotic argonautes?)\\b"
+  },
+  {
+   "id": "viperins",
+   "label": "Viperins",
+   "group": "Named defense systems",
+   "pattern": "\\bviperins?\\b"
+  }
+ ]
+}
